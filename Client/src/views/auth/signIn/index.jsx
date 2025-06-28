@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useFormik } from "formik";
+import WalletConnect from "components/wallet/WalletConnect";
 // Chakra imports
 import {
   Box,
@@ -40,6 +41,11 @@ function SignIn() {
   const brandStars = useColorModeValue("brand.500", "brand.400");
   const [isLoding, setIsLoding] = React.useState(false);
   const [checkBox, setCheckBox] = React.useState(true);
+  const [walletConnected, setWalletConnected] = React.useState(false);
+const [walletAddress, setWalletAddress] = React.useState(null);
+
+
+
 
   const dispatch = useDispatch();
 
@@ -73,25 +79,38 @@ function SignIn() {
     },
   });
   const navigate = useNavigate();
+ 
+ 
+ const handleWalletConnect = (address) => {
+  setWalletAddress(address);
+  setWalletConnected(!!address); // true if address exists, false otherwise
+};
 
-  const login = async () => {
-    try {
-      setIsLoding(true);
-      let response = await postApi("api/user/login", values, checkBox);
-      if (response && response.status === 200) {
-        navigate("/superAdmin");
-        toast.success("Login Successfully!");
-        resetForm();
-        dispatch(setUser(response?.data?.user))
-      } else {
-        toast.error(response.response.data?.error);
-      }
-    } catch (e) {
-      console.log(e);
-    } finally {
-      setIsLoding(false);
+
+const login = async () => {
+  if (!walletConnected || !walletAddress) {
+    toast.error("Please connect your wallet first");
+    return;
+  }
+
+  try {
+    setIsLoding(true);
+    let response = await postApi("api/user/login", values, checkBox);
+    if (response && response.status === 200) {
+      navigate("/superAdmin");
+      toast.success("Login Successfully!");
+      resetForm();
+      dispatch(setUser(response?.data?.user));
+    } else {
+      toast.error(response.response.data?.error);
     }
-  };
+  } catch (e) {
+    console.log(e);
+  } finally {
+    setIsLoding(false);
+  }
+};
+
 
   return (
     <DefaultAuth
@@ -112,7 +131,7 @@ function SignIn() {
         flexDirection="column"
       >
         <Box me="auto">
-          <Heading color={textColor} fontSize="36px" mb="10px">
+          <Heading color={textColor} fontSize="36px" mb="10px" mt="10px">
             Sign In
           </Heading>
           <Text
@@ -136,134 +155,126 @@ function SignIn() {
           me="auto"
           mb={{ base: "20px", md: "auto" }}
         >
-          <form onSubmit={handleSubmit}>
-            <FormControl isInvalid={errors.username && touched.username}>
-              <FormLabel
-                display="flex"
-                ms="4px"
-                fontSize="sm"
-                fontWeight="500"
-                color={textColor}
-                mb="8px"
-              >
-                Email<Text color={brandStars}>*</Text>
-              </FormLabel>
-              <Input
-                fontSize="sm"
-                onChange={handleChange}
-                onBlur={handleBlur}
-                value={values.username}
-                name="username"
-                ms={{ base: "0px", md: "0px" }}
-                type="email"
-                placeholder="mail@simmmple.com"
-                mb={errors.username && touched.username ? undefined : "24px"}
-                fontWeight="500"
-                size="lg"
-                borderColor={
-                  errors.username && touched.username ? "red.300" : null
-                }
-                className={
-                  errors.username && touched.username ? "isInvalid" : null
-                }
-              />
-              {errors.username && touched.username && (
-                <FormErrorMessage mb="24px">
-                  {" "}
-                  {errors.username}
-                </FormErrorMessage>
-              )}
-            </FormControl>
+                    <WalletConnect onConnect={handleWalletConnect} />
 
-            <FormControl
-              isInvalid={errors.password && touched.password}
-              mb="24px"
-            >
-              <FormLabel
-                ms="4px"
-                fontSize="sm"
-                fontWeight="500"
-                color={textColor}
-                display="flex"
-              >
-                Password<Text color={brandStars}>*</Text>
-              </FormLabel>
-              <InputGroup size="md">
-                <Input
-                  isRequired={true}
-                  fontSize="sm"
-                  placeholder="Enter Your Password"
-                  name="password"
-                  mb={errors.password && touched.password ? undefined : "24px"}
-                  value={values.password}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  size="lg"
-                  variant="auth"
-                  type={show ? "text" : "password"}
-                  borderColor={
-                    errors.password && touched.password ? "red.300" : null
-                  }
-                  className={
-                    errors.password && touched.password ? "isInvalid" : null
-                  }
-                />
-                <InputRightElement display="flex" alignItems="center" mt="4px">
-                  <Icon
-                    color={textColorSecondary}
-                    _hover={{ cursor: "pointer" }}
-                    as={show ? RiEyeCloseLine : MdOutlineRemoveRedEye}
-                    onClick={showPass}
-                  />
-                </InputRightElement>
-              </InputGroup>
-              {errors.password && touched.password && (
-                <FormErrorMessage mb="24px">
-                  {" "}
-                  {errors.password}
-                </FormErrorMessage>
-              )}
-              <Flex justifyContent="space-between" align="center" mb="24px">
-                <FormControl display="flex" alignItems="center">
-                  <Checkbox
-                    onChange={(e) => setCheckBox(e.target.checked)}
-                    id="remember-login"
-                    value={checkBox}
-                    defaultChecked
-                    colorScheme="brandScheme"
-                    me="10px"
-                  />
-                  <FormLabel
-                    htmlFor="remember-login"
-                    mb="0"
-                    fontWeight="normal"
-                    color={textColor}
-                    fontSize="sm"
-                  >
-                    Keep me logged in
-                  </FormLabel>
-                </FormControl>
-              </Flex>
+        <form onSubmit={handleSubmit}>
+  <FormControl isInvalid={errors.username && touched.username} mb="24px">
+    <FormLabel
+      display="flex"
+      ms="4px"
+      fontSize="sm"
+      fontWeight="500"
+      color={textColor}
+      mb="8px"
+    >
+      Email<Text color={brandStars}>*</Text>
+    </FormLabel>
+    <Input
+      fontSize="sm"
+      onChange={handleChange}
+      onBlur={handleBlur}
+      value={values.username}
+      name="username"
+      ms={{ base: "0px", md: "0px" }}
+      type="email"
+      placeholder="mail@simmmple.com"
+      fontWeight="500"
+      size="lg"
+      borderColor={errors.username && touched.username ? "red.300" : null}
+      className={errors.username && touched.username ? "isInvalid" : null}
+    />
+    {errors.username && touched.username && (
+      <FormErrorMessage>{errors.username}</FormErrorMessage>
+    )}
+  </FormControl>
 
-              <Flex
-                justifyContent="space-between"
-                align="center"
-                mb="24px"
-              ></Flex>
-              <Button
-                fontSize="sm"
-                variant="brand"
-                fontWeight="500"
-                w="100%"
-                h="50"
-                type="submit"
-                mb="24px"
-                disabled={isLoding ? true : false}
-              >
-                {isLoding ? <Spinner /> : "Sign In"}
-              </Button>
-            </FormControl>
-          </form>
+  <FormControl isInvalid={errors.password && touched.password} mb="24px">
+    <FormLabel
+      ms="4px"
+      fontSize="sm"
+      fontWeight="500"
+      color={textColor}
+      display="flex"
+    >
+      Password<Text color={brandStars}>*</Text>
+    </FormLabel>
+    <InputGroup size="md">
+      <Input
+        isRequired
+        fontSize="sm"
+        placeholder="Enter Your Password"
+        name="password"
+        value={values.password}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        size="lg"
+        variant="auth"
+        type={show ? "text" : "password"}
+        borderColor={errors.password && touched.password ? "red.300" : null}
+        className={errors.password && touched.password ? "isInvalid" : null}
+      />
+      <InputRightElement display="flex" alignItems="center" mt="4px">
+        <Icon
+          color={textColorSecondary}
+          _hover={{ cursor: "pointer" }}
+          as={show ? RiEyeCloseLine : MdOutlineRemoveRedEye}
+          onClick={showPass}
+        />
+      </InputRightElement>
+    </InputGroup>
+    {errors.password && touched.password && (
+      <FormErrorMessage>{errors.password}</FormErrorMessage>
+    )}
+  </FormControl>
+
+  <Flex justifyContent="space-between" align="center" mb="24px">
+    <FormControl display="flex" alignItems="center">
+      <Checkbox
+        onChange={(e) => setCheckBox(e.target.checked)}
+        id="remember-login"
+        value={checkBox}
+        defaultChecked
+        colorScheme="brandScheme"
+        me="10px"
+      />
+      <FormLabel
+        htmlFor="remember-login"
+        mb="0"
+        fontWeight="normal"
+        color={textColor}
+        fontSize="sm"
+      >
+        Keep me logged in
+      </FormLabel>
+    </FormControl>
+  </Flex>
+
+  {!walletConnected && (
+    <Text
+      color="red.500"
+      fontSize="sm"
+      mb="12px"
+      fontWeight="bold"
+      textAlign="center"
+    >
+      Please connect your metamask wallet before signing in.
+    </Text>
+  )}
+
+  <Button
+    fontSize="sm"
+    variant="brand"
+    fontWeight="500"
+    w="100%"
+    h="50"
+    type="submit"
+    mb="24px"
+    disabled={isLoding || !walletConnected}
+  >
+    {isLoding ? <Spinner /> : "Sign In"}
+  </Button>
+</form>
+
         </Flex>
       </Flex>
     </DefaultAuth>
