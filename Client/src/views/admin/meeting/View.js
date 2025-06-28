@@ -29,6 +29,7 @@ const View = () => {
     const fetchData = async () => {
         setIsLoding(true)
         let response = await getApi('api/meeting/view/', param.id)
+        console.log(response.data)
         setData(response?.data);
         setIsLoding(false)
     }
@@ -120,9 +121,21 @@ const View = () => {
                                         <Text>{data?.agenda ? data?.agenda : ' - '}</Text>
                                     </GridItem>
                                     <GridItem colSpan={{ base: 2, md: 1 }}>
-                                        <Text fontSize="sm" fontWeight="bold" color={'blackAlpha.900'}> Created By </Text>
-                                        <Text>{data?.createdByName ? data?.createdByName : ' - '}</Text>
-                                    </GridItem>
+  <Text fontSize="sm" fontWeight="bold" color={'blackAlpha.900'}> Created By </Text>
+  {data?.createBy ? (
+    <>
+      <Text>
+        {data.createBy.firstName} {data.createBy.lastName}
+      </Text>
+      <Text fontSize="xs" color="gray.500">
+        ID: {data.createBy._id}
+      </Text>
+    </>
+  ) : (
+    <Text> - </Text>
+  )}
+</GridItem>
+
 
                                     <GridItem colSpan={{ base: 2, md: 1 }}>
                                         <Text fontSize="sm" fontWeight="bold" color={'blackAlpha.900'}> DateTime </Text>

@@ -72,7 +72,12 @@ const Index = () => {
         },
         { Header: "Date & Time", accessor: "dateTime", },
         { Header: "Time Stamp", accessor: "timestamp", },
-        { Header: "Create By", accessor: "createdByName", },
+        {  Header: "Created By",
+  accessor: "createBy", // pointing to the nested object
+  cell: ({ value }) => {
+    if (!value) return ' - ';
+    return `${value.firstName || ''} ${value.lastName || ''}`.trim();
+  }, },
         ...(permission?.update || permission?.view || permission?.delete ? [actionHeader] : [])
 
     ];
@@ -88,22 +93,26 @@ const Index = () => {
         setIsLoding(false)
     }
 
-    const handleDeleteMeeting = async (ids) => {
-        try {
-            setIsLoding(true)
-            let response = await deleteManyApi('api/meeting/deleteMany', ids)
-            if (response.status === 200) {
-                setSelectedValues([])
-                setDeleteMany(false)
-                setAction((pre) => !pre)
-            }
-        } catch (error) {
-            console.log(error)
+  const handleDeleteMeeting = async (ids) => {
+    try {
+        setIsLoding(true);
+        const response = await deleteManyApi('api/meeting/deleteMany', { ids }); 
+        if (response.status === 200) {
+            toast.success("Meetings deleted successfully");
+            setSelectedValues([]);
+            setDeleteMany(false);
+            setAction((prev) => !prev);
+        } else {
+            toast.error("Failed to delete meetings");
         }
-        finally {
-            setIsLoding(false)
-        }
+    } catch (error) {
+        console.error("Delete error:", error);
+        toast.error("Something went wrong");
+    } finally {
+        setIsLoding(false);
     }
+};
+
 
     // const [selectedColumns, setSelectedColumns] = useState([...tableColumns]);
     // const dataColumn = tableColumns?.filter(item => selectedColumns?.find(colum => colum?.Header === item.Header))
@@ -158,10 +167,11 @@ const Index = () => {
                 setGetTagValues={setGetTagValuesOutside}
                 setSearchbox={setSearchboxOutside}
             />
-            <AddMeeting setAction={setAction} isOpen={isOpen} onClose={onClose} />
+<AddMeeting setAction={setAction} isOpen={isOpen} onClose={onClose} fetchData={fetchData} />
+            
 
             {/* Delete model */}
-            <CommonDeleteModel isOpen={deleteMany} onClose={() => setDeleteMany(false)} type='Meetings' handleDeleteData={handleDeleteMeeting} ids={selectedValues} />
+            <CommonDeleteModel isOpen={deleteMany} onClose={() => setDeleteMany(false)} type='Meetings' handleDeleteData={handleDeleteMeeting} ids={selectedValues} isLoading={isLoding}   />
         </div>
     )
 }

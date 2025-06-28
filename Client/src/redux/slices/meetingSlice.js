@@ -4,7 +4,10 @@ import { getApi } from '../../services/api'
 export const fetchMeetingData = createAsyncThunk('fetchMeetingData', async () => {
     const user = JSON.parse(localStorage.getItem("user"));
     try {
-        const response = await getApi(user.role === 'superAdmin' ? 'api/meeting' : `api/meeting/?createBy=${user._id}`);
+        // const response = await getApi(user.role === 'superAdmin' ? 'api/meeting' : `api/meeting/?createBy=${user._id}`);
+                const response = await getApi('api/meeting/view/');
+                console.log(`meeting data ${response}`)
+
         return response;
     } catch (error) {
         throw error;

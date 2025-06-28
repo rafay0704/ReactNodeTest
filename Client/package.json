@@ -20,6 +20,8 @@
     "@reduxjs/toolkit": "^2.0.1",
     "@stripe/react-stripe-js": "^2.3.0",
     "@stripe/stripe-js": "^2.1.6",
+    "ajv": "^8.17.1",
+    "ajv-keywords": "^5.1.0",
     "apexcharts": "^4.0.0",
     "axios": "^1.4.0",
     "chakra-ui-autocomplete": "^1.4.5",

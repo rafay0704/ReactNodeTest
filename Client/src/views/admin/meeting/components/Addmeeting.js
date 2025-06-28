@@ -43,18 +43,48 @@ const AddMeeting = (props) => {
         initialValues: initialValues,
         validationSchema: MeetingSchema,
         onSubmit: (values, { resetForm }) => {
-            
-        },
+    AddData(); // call 
+  },
     });
     const { errors, touched, values, handleBlur, handleChange, handleSubmit, setFieldValue } = formik
 
-    const AddData = async () => {
-
+   const AddData = async () => {
+  try {
+    setIsLoding(true);
+    const payload = {
+      agenda: values.agenda,
+      attendes: values.attendes,
+      attendesLead: values.attendesLead,
+      location: values.location,
+      related: values.related,
+      dateTime: values.dateTime,
+      notes: values.notes,
     };
 
-    const fetchAllData = async () => {
-        
+    const response = await postApi('api/meeting/add', payload);
+    if (response?.status === 200) {
+      toast.success("Meeting created successfully!");
+      formik.resetForm();
+      onClose();
+      if (fetchData) {
+        await fetchData(); // Refresh meetings list after add
+      }
+    } else {
+      toast.error("Failed to create meeting");
     }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  } finally {
+    setIsLoding(false);
+  }
+};
+
+
+
+    // const fetchAllData = async () => {
+        
+    // }
 
     useEffect(() => {
 
